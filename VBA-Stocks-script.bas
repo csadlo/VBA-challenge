@@ -54,9 +54,9 @@ Sub Process_Stock_Data()
     Set sh = ActiveSheet
     
     ' Loop through all stock movement data entries
-    For rw = 1 To 5000
-    'For Each rww In sh.Rows
-    '   rw = rww.Row
+    'For rw = 1 To 5000
+    For Each rww In sh.Rows
+       rw = rww.Row
 
         'Debug.Print ("First Ticker Code is " + Cells(rw, 1).Value)
         'Debug.Print ("Second Ticker Code is " + Cells(rw - 1, 1).Value)
@@ -89,14 +89,25 @@ Sub Process_Stock_Data()
                 ' MsgBox "Closing value for " & Ticker_Code & " is " & Final_Day_OTY_Closing_Value
                 
                 Yearly_Change = Final_Day_OTY_Closing_Value - First_Day_OTY_Opening_Value
+                Percent_Change = (Yearly_Change / First_Day_OTY_Opening_Value) * 100
                 
                 ' Update the Ticker Yearly Change in the Summary Table
                 cellrange = "L" & Summary_Table_Row
                 Range(cellrange).Value = Yearly_Change
+                Range(cellrange).NumberFormat = "#,##0.00"
+                
+                ' Do conditional formatting here
+                If Yearly_Change > 0 Then
+                    Range(cellrange).Interior.ColorIndex = 4    ' Green
+                ElseIf Yearly_Change < 0 Then
+                    Range(cellrange).Interior.ColorIndex = 3    ' Red
+                End If
+
                 
                 ' Update the Ticker Percent Change in the Summary Table
                 cellrange = "M" & Summary_Table_Row
                 Range(cellrange).Value = Percent_Change
+                Range(cellrange).NumberFormat = "#,##0.00"
                 
                 ' Update the Ticker Volume Traded in the Summary Table
                 cellrange = "N" & Summary_Table_Row
@@ -104,26 +115,32 @@ Sub Process_Stock_Data()
                 
                 ' Update if better was found
                 If Percent_Change > Greatest_Percent_Increase Then
+                    Greatest_Percent_Increase = Percent_Change
                     Greatest_Percent_Increase_Ticker_Code = Cells(rw - 1, 1)
-                    ' Update Greatest Table
-                    Range("R" & Summary_Table_Row + 1).Value = Greatest_Percent_Increase_Ticker_Code
-                    Range("S" & Summary_Table_Row + 1).Value = Greatest_Percent_Increase
+                    'MsgBox "Greatest Percent Increase is " & Greatest_Percent_Increase & " from " & Greatest_Percent_Increase_Ticker_Code
+                    ' Update Greatest Display Table
+                    Range("R" & 2).Value = Greatest_Percent_Increase_Ticker_Code
+                    Range("S" & 2).Value = Greatest_Percent_Increase
                 End If
                 
                 ' Update if better was found
                 If Percent_Change < Greatest_Percent_Decrease Then
                     Greatest_Percent_Decrease_Ticker_Code = Cells(rw - 1, 1)
-                    ' Update Greatest Table
-                    Range("R" & Summary_Table_Row + 2).Value = Greatest_Percent_Decrease_Ticker_Code
-                    Range("S" & Summary_Table_Row + 2).Value = Greatest_Percent_Decrease
+                    Greatest_Percent_Decrease = Percent_Change
+                    'MsgBox "Greatest Percent Decrease is " & Greatest_Percent_Decrease & " from " & Greatest_Percent_Decrease_Ticker_Code
+                    ' Update Greatest Display Table
+                    Range("R" & 3).Value = Greatest_Percent_Decrease_Ticker_Code
+                    Range("S" & 3).Value = Greatest_Percent_Decrease
                 End If
                 
                 ' Update if better was found
                 If Volume_Traded > Greatest_Total_Volume Then
                     Greatest_Total_Volume_Ticker_Code = Cells(rw - 1, 1)
-                    ' Update Greatest Table
-                    Range("R" & Summary_Table_Row + 3).Value = Greatest_Total_Volume_Ticker_Code
-                    Range("S" & Summary_Table_Row + 3).Value = Greatest_Total_Volume
+                    Greatest_Total_Volume = Volume_Traded
+                    'MsgBox "Greatest Total Volume is " & Greatest_Total_Volume & " from " & Greatest_Total_Volume_Ticker_Code
+                    ' Update Greatest Display Table
+                    Range("R" & 4).Value = Greatest_Total_Volume_Ticker_Code
+                    Range("S" & 4).Value = Greatest_Total_Volume
                 End If
     
             End If
@@ -169,8 +186,11 @@ Sub Reset_Summary_Table()
     
     sh.Columns(11).ClearContents
     sh.Columns(12).ClearContents
+    sh.Columns(12).FormatConditions.Delete
     sh.Columns(13).ClearContents
     sh.Columns(14).ClearContents
+    sh.Columns(18).ClearContents
+    sh.Columns(19).ClearContents
     
     Range("K" & Summary_Table_Row).Value = "Ticker"
     Range("L" & Summary_Table_Row).Value = "Yearly Change"
