@@ -89,7 +89,17 @@ Sub Process_Stock_Data()
                 ' MsgBox "Closing value for " & Ticker_Code & " is " & Final_Day_OTY_Closing_Value
                 
                 Yearly_Change = Final_Day_OTY_Closing_Value - First_Day_OTY_Opening_Value
-                Percent_Change = (Yearly_Change / First_Day_OTY_Opening_Value) * 100
+                
+                ' Error Checking
+                'If First_Day_OTY_Opening_Value = 0 Then
+                '    MsgBox "Error: Ticker Code " & Cells(rw - 1, 1) & " is 0???"
+                'End If
+                
+                If First_Day_OTY_Opening_Value = 0 Then
+                    Percent_Change = 0
+                Else
+                    Percent_Change = (Yearly_Change / First_Day_OTY_Opening_Value) * 100
+                End If
                 
                 ' Update the Ticker Yearly Change in the Summary Table
                 cellrange = "L" & Summary_Table_Row
